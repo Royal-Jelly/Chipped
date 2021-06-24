@@ -68,14 +68,21 @@ public class ChippedClient implements ClientModInitializer {
             BlockRenderLayerMap.INSTANCE.putBlock(wallTorch, RenderType.cutout());
         }
 
-        for (ChippedLanternBlock lantern : ChippedBlocks.LANTERNS) {
+        for (ChippedLanternBlock lantern : ChippedBlocks.SPECIAL_LANTERNS) {
             BlockRenderLayerMap.INSTANCE.putBlock(lantern, RenderType.cutout());
         }
 
-        for (ChippedLanternBlock lantern : ChippedBlocks.SOUL_LANTERNS) {
+        for (ChippedLanternBlock lantern : ChippedBlocks.SPECIAL_SOUL_LANTERNS) {
             BlockRenderLayerMap.INSTANCE.putBlock(lantern, RenderType.cutout());
         }
 
+        for (Lantern lantern : ChippedBlocks.LANTERNS) {
+            BlockRenderLayerMap.INSTANCE.putBlock(lantern, RenderType.cutout());
+        }
+
+        for (Lantern lantern : ChippedBlocks.SOUL_LANTERNS) {
+            BlockRenderLayerMap.INSTANCE.putBlock(lantern, RenderType.cutout());
+        }
         final BlockColor grassColourHandler = (state, blockAccess, pos, tintIndex) -> {
             if (blockAccess != null && pos != null) {
                 return BiomeColors.getAverageGrassColor(blockAccess, pos);

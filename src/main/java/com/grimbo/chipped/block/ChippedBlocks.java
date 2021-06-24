@@ -5,6 +5,7 @@ import com.grimbo.chipped.menus.ChippedMenu;
 import com.grimbo.chipped.menus.ChippedMenuType;
 import com.grimbo.chipped.recipe.ChippedSerializer;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
@@ -13,11 +14,14 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.StandingAndWallBlockItem;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.block.state.BlockBehaviour.StateArgumentPredicate;
 import net.minecraft.world.level.block.state.BlockBehaviour.StatePredicate;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -46,9 +50,19 @@ public class ChippedBlocks {
     private static final StatePredicate ALWAYS_FALSE_POSITION = (state, world, position) -> false;
     private static final StateArgumentPredicate<EntityType<?>> VALID_SPAWN = (state, world, position, type) -> false;
     protected static final VoxelShape CHONK_LANTERN_SHAPE = Shapes.or(Block.box(2.0D, 0.0D, 2.0D, 14.0D, 1.0D, 14.0D), Block.box(1, 1, 1, 15, 15, 15));
+    protected static final VoxelShape THICC_LANTERN_SHAPE = Shapes.or(Block.box(2.0D, 0.0D, 2.0D, 14.0D, 1.0D, 14.0D), Block.box(1, 1, 1, 15, 15, 15));
     protected static final VoxelShape DONUT_LANTERN_SHAPE_EAST = Block.box(5.0D, 0.0D, 1.0D, 11.0D, 15.0D, 15.0D);
     protected static final VoxelShape DONUT_LANTERN_SHAPE_NORTH = Block.box(1.0D, 0.0D, 5.0D, 15.0D, 15.0D, 11.0D);
     protected static final VoxelShape TALL_LANTERN_SHAPE = Block.box(5, 0, 5, 11, 15, 11);
+    protected static final VoxelShape HANGING_WOOD_LANTERN = Shapes.or(Block.box(5.0D, 2.0D, 5.0D, 11.0D, 12.0D, 11.0D), Block.box(4, 12, 4, 12, 13, 12), Block.box(4, 1, 4, 12, 2, 12),  Block.box(5, 13, 5, 11, 14, 11));
+    protected static final VoxelShape WOOD_LANTERN = Shapes.or(Block.box(5.0D, 1D, 5.0D, 11.0D, 11.0D, 11.0D), Block.box(4, 11, 4, 12, 12, 12), Block.box(4, 0, 4, 12, 1, 12), Block.box(5, 12, 5, 11, 13, 11));
+    protected static final VoxelShape HANGING_JAR_LANTERN = Shapes.or(Block.box(7.0D, 11D, 7.0D, 9.0D, 12.0D, 9.0D), Block.box(6, 5, 6, 10, 11, 10));
+    protected static final VoxelShape JAR_LANTERN  = Shapes.or(Block.box(7.0D, 6D, 7.0D, 9.0D, 7.0D, 9.0D), Block.box(6, 0, 6, 10, 6, 10));
+    protected static final VoxelShape HANGING_PAPER_LANTERN = Shapes.or(Block.box(4, 5, 4, 12, 14, 12), Block.box(5, 3, 5, 11, 5, 11), Block.box(5, 14, 5, 11, 16, 11));
+    protected static final VoxelShape PAPER_LANTERN = Shapes.or(Block.box(4, 3, 4, 12, 12, 12), Block.box(5, 1, 5, 11, 3, 11),Block.box(5, 12, 5, 11, 14, 11), Block.box(4, 0, 4, 12, 2, 12));
+    protected static final VoxelShape HANGING_PAPER_LANTERN_2 = Shapes.or(Block.box(4, 9, 4, 12, 15, 12), Block.box(5, 1 ,5, 11, 5, 11), Block.box(6, 0, 6, 10, 1, 10), Block.box(6, 5, 6, 10, 6, 10), Block.box(5, 15, 5, 11, 16, 11), Block.box(5, 8, 5, 11, 9 ,11));
+    protected static final VoxelShape PAPER_LANTERN_2 = Shapes.or(Block.box(4, 3, 4, 12, 9, 12), Block.box(5, 9, 5, 11, 10, 11), Block.box(5, 2, 5, 11, 3, 11), Block.box(4, 0, 4, 12, 2, 12));
+
 
     public static final List<GlassBlock> GLASSES = new ArrayList<>();
     public static final List<IronBarsBlock> GLASS_PANES = new ArrayList<>();
@@ -59,8 +73,10 @@ public class ChippedBlocks {
 
     public static final List<VineBlock> VINES = new ArrayList<>();
 
-    public static final List<ChippedLanternBlock> LANTERNS = new ArrayList<>();
-    public static final List<ChippedLanternBlock> SOUL_LANTERNS = new ArrayList<>();
+    public static final List<Lantern> LANTERNS = new ArrayList<>();
+    public static final List<Lantern> SOUL_LANTERNS = new ArrayList<>();
+    public static final List<ChippedLanternBlock> SPECIAL_LANTERNS = new ArrayList<>();
+    public static final List<ChippedLanternBlock> SPECIAL_SOUL_LANTERNS = new ArrayList<>();
 
     public static final List<RedstoneTorchBlock> REDSTONE_TORCHES = new ArrayList<>();
     public static final List<RedstoneWallTorchBlock> REDSTONE_WALL_TORCHES = new ArrayList<>();
@@ -192,17 +208,41 @@ public class ChippedBlocks {
         registerBlocks("melon", () -> new MelonBlock(MELON_PROPERTIES) {}, 10);
         registerBlocks("vine", () -> new VineBlock(VINE_PROPERTIES), 8, VINES);
 
-        Collections.addAll(LANTERNS,
-                register("lantern_1", new ChippedLanternBlock(LANTERN_PROPERTIES, CHONK_LANTERN_SHAPE)),
-                register("lantern_2", new ChippedLanternBlock(LANTERN_PROPERTIES, DONUT_LANTERN_SHAPE_EAST, DONUT_LANTERN_SHAPE_NORTH)),
-                register("lantern_3", new ChippedLanternBlock(LANTERN_PROPERTIES, TALL_LANTERN_SHAPE))
+        Collections.addAll(SPECIAL_LANTERNS,
+                register("special_lantern_1", new ChippedLanternBlock(LANTERN_PROPERTIES, CHONK_LANTERN_SHAPE)),
+                register("special_lantern_2", new ChippedLanternBlock(LANTERN_PROPERTIES, DONUT_LANTERN_SHAPE_EAST, DONUT_LANTERN_SHAPE_NORTH)),
+                register("special_lantern_3", new ChippedLanternBlock(LANTERN_PROPERTIES, TALL_LANTERN_SHAPE)),
+                register("special_lantern_4", new ChippedLanternBlock(LANTERN_PROPERTIES, THICC_LANTERN_SHAPE))
         );
 
-        Collections.addAll(SOUL_LANTERNS,
-                register("soul_lantern_1", new ChippedLanternBlock(LANTERN_PROPERTIES, CHONK_LANTERN_SHAPE)),
-                register("soul_lantern_2", new ChippedLanternBlock(LANTERN_PROPERTIES, DONUT_LANTERN_SHAPE_EAST, DONUT_LANTERN_SHAPE_NORTH)),
-                register("soul_lantern_3", new ChippedLanternBlock(LANTERN_PROPERTIES, TALL_LANTERN_SHAPE))
+        Collections.addAll(SPECIAL_SOUL_LANTERNS,
+                register("special_soul_lantern_1", new ChippedLanternBlock(LANTERN_PROPERTIES, CHONK_LANTERN_SHAPE)),
+                register("special_soul_lantern_2", new ChippedLanternBlock(LANTERN_PROPERTIES, DONUT_LANTERN_SHAPE_EAST, DONUT_LANTERN_SHAPE_NORTH)),
+                register("special_soul_lantern_3", new ChippedLanternBlock(LANTERN_PROPERTIES, TALL_LANTERN_SHAPE)),
+                register("special_soul_lantern_4", new ChippedLanternBlock(LANTERN_PROPERTIES, THICC_LANTERN_SHAPE))
         );
+
+        for(int i: new int[]{1, 3, 4}) {
+            Lantern lantern = register("lantern_" + i, new Lantern(LANTERN_PROPERTIES));
+            Collections.addAll(LANTERNS, lantern);
+        }
+
+        registerSpecialLantern(new int[]{2}, LANTERNS, "lantern", HANGING_WOOD_LANTERN, WOOD_LANTERN);
+        //registerSpecialLantern(new int[]{5, 7, 8}, LANTERNS, "lantern", HANGING_CLEAR_LANTERN, CLEAR_LANTERN);
+        registerSpecialLantern(new int[]{6}, LANTERNS,"lantern", HANGING_JAR_LANTERN, JAR_LANTERN);
+        registerSpecialLantern(new int[]{9, 10, 11, 12, 13, 14}, LANTERNS,"lantern", HANGING_PAPER_LANTERN, PAPER_LANTERN);
+
+
+        for(int i: new int[]{1, 3}) {
+            Lantern lantern = register("soul_lantern_" + i, new Lantern(LANTERN_PROPERTIES));
+            Collections.addAll(SOUL_LANTERNS, lantern);
+        }
+
+        registerSpecialLantern(new int[]{2}, SOUL_LANTERNS, "soul_lantern", HANGING_WOOD_LANTERN, WOOD_LANTERN);
+        registerSpecialLantern(new int[]{5},SOUL_LANTERNS, "soul_lantern", HANGING_JAR_LANTERN, JAR_LANTERN);
+        //registerSpecialLantern(new int[]{4},SOUL_LANTERNS, "soul_lantern", HANGING_CLEAR_LANTERN, CLEAR_LANTERN);
+        registerSpecialLantern(new int[]{6, 7, 8, 9, 10, 11}, SOUL_LANTERNS,"soul_lantern", HANGING_PAPER_LANTERN_2, PAPER_LANTERN_2);
+
 
         //Redstone Torches
         for (int i = 2; i <= 6; i++) {
@@ -217,7 +257,7 @@ public class ChippedBlocks {
         //Regular Torches
         for (int i = 1; i <= 9; i++) {
             WallTorchBlock wallTorch = Registry.register(Registry.BLOCK, new ResourceLocation(Chipped.MOD_ID, "wall_torch_" + i), new WallTorchBlock(TORCH_PROPERTIES, ParticleTypes.FLAME) {});
-            TorchBlock torch = Registry.register(Registry.BLOCK, new ResourceLocation(Chipped.MOD_ID, "torch" + i), new TorchBlock(TORCH_PROPERTIES, ParticleTypes.FLAME) {});
+            TorchBlock torch = Registry.register(Registry.BLOCK, new ResourceLocation(Chipped.MOD_ID, "torch_" + i), new TorchBlock(TORCH_PROPERTIES, ParticleTypes.FLAME) {});
             Registry.register(Registry.ITEM, "torch_" + i, new StandingAndWallBlockItem(torch, wallTorch, new Item.Properties().tab(Chipped.CHIPPED)));
             TORCHES.add(torch);
             WALL_TORCHES.add(wallTorch);
@@ -238,7 +278,17 @@ public class ChippedBlocks {
     }
 
     //Registries
-
+    private static void registerSpecialLantern(int[] indexes, List<Lantern> list, String name, VoxelShape hangingShape, VoxelShape normalShape) {
+        for(int i: indexes) {
+            Lantern lantern = register(name + "_" + i, new Lantern(LANTERN_PROPERTIES){
+                @Override
+                public VoxelShape getShape(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos, CollisionContext collisionContext) {
+                    return blockState.getValue(HANGING) ? hangingShape : normalShape;
+                }
+            });
+            Collections.addAll(list, lantern);
+        }
+    }
     /**
      * Only use if a vanilla block counterpart exists and the same properties should be used.
      *
