@@ -53,7 +53,10 @@ public class ChippedWorkbench extends Block {
 	}
 
 	public BlockState getStateForPlacement(BlockPlaceContext context) {
-		return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+		Direction direction = context.getHorizontalDirection();
+		BlockPos blockPos = context.getClickedPos();
+		BlockPos blockPos2 = blockPos.relative(direction.getCounterClockWise());
+		return context.getLevel().getBlockState(blockPos2).canBeReplaced(context) ? this.defaultBlockState().setValue(FACING, direction.getOpposite()) : null;
 	}
 
 	@Override
