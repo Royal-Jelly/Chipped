@@ -10,10 +10,16 @@ import me.shedaniel.rei.api.plugins.REIPluginV0;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.Tag;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class REIChippedPlugin implements REIPluginV0 {
     @Override
@@ -42,7 +48,21 @@ public class REIChippedPlugin implements REIPluginV0 {
 
     private void registerRecipes(RecipeManager recipeManager, RecipeHelper recipeHelper, RecipeType<ChippedRecipe> type, Block block) {
         final ResourceLocation category = Registry.BLOCK.getKey(block);
-        recipeManager.getAllRecipesFor(type).stream().map(recipe -> new ChippedRecipeCategory.RecipeWrapper(recipe, category)).forEach(recipeHelper::registerDisplay);
+        for (ChippedRecipeCategory.FlattenedRecipe recipe : flatten(recipeManager.getAllRecipesFor(type), category)) {
+            recipeHelper.registerDisplay(recipe);
+        }
+    }
+
+    private static List<ChippedRecipeCategory.FlattenedRecipe> flatten(Collection<ChippedRecipe> recipes, ResourceLocation category) {
+        List<ChippedRecipeCategory.FlattenedRecipe> flattenedRecipes = new ArrayList<>();
+        for (ChippedRecipe recipe : recipes) {
+            for (Tag<Item> tag : recipe.getTags()) {
+                for (Item item : tag.getValues()) {
+                    flattenedRecipes.add(new ChippedRecipeCategory.FlattenedRecipe(tag, new ItemStack(item), category));
+                }
+            }
+        }
+        return flattenedRecipes;
     }
 
     @Override

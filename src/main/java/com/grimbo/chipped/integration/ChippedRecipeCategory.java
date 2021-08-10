@@ -1,7 +1,6 @@
 package com.grimbo.chipped.integration;
 
 import com.google.common.collect.Lists;
-import com.grimbo.chipped.recipe.ChippedRecipe;
 import me.shedaniel.math.Point;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.EntryStack;
@@ -12,16 +11,17 @@ import me.shedaniel.rei.gui.widget.Widget;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.Tag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ChippedRecipeCategory implements RecipeCategory<ChippedRecipeCategory.RecipeWrapper> {
+public class ChippedRecipeCategory implements RecipeCategory<ChippedRecipeCategory.FlattenedRecipe> {
 	private final ResourceLocation id;
     private final ItemStack icon;
     private final String name;
@@ -48,7 +48,7 @@ public class ChippedRecipeCategory implements RecipeCategory<ChippedRecipeCatego
     }
 
     @Override
-    public @NotNull List<Widget> setupDisplay(RecipeWrapper recipeDisplay, Rectangle bounds) {
+    public @NotNull List<Widget> setupDisplay(FlattenedRecipe recipeDisplay, Rectangle bounds) {
         Point startPoint = new Point(bounds.getCenterX() - 41, bounds.getCenterY() - 13);
         List<Widget> widgets = Lists.newArrayList();
         widgets.add(Widgets.createRecipeBase(bounds));
@@ -65,27 +65,29 @@ public class ChippedRecipeCategory implements RecipeCategory<ChippedRecipeCatego
     }
 
     @Override
-    public int getDisplayWidth(RecipeWrapper display) {
+    public int getDisplayWidth(FlattenedRecipe display) {
         return RecipeCategory.super.getDisplayWidth(display);
     }
 
-    public static class RecipeWrapper implements RecipeDisplay {
-	    private final ChippedRecipe recipe;
+    public static class FlattenedRecipe implements RecipeDisplay {
+	    private final Tag<Item> tag;
+	    private final ItemStack result;
 	    private final ResourceLocation category;
 
-        public RecipeWrapper(ChippedRecipe recipe, ResourceLocation category) {
-            this.recipe = recipe;
+        public FlattenedRecipe(Tag<Item> tag, ItemStack result, ResourceLocation category) {
+            this.tag = tag;
+            this.result = result;
             this.category = category;
         }
 
         @Override
         public @NotNull List<List<EntryStack>> getInputEntries() {
-            return EntryStack.ofIngredients(recipe.getIngredients());
+            return Collections.singletonList(EntryStack.ofIngredient(Ingredient.of(tag)));
         }
 
         @Override
         public @NotNull List<List<EntryStack>> getResultingEntries() {
-            return Collections.singletonList(Collections.singletonList(EntryStack.create(recipe.getResultItem())));
+            return Collections.singletonList(Collections.singletonList(EntryStack.create(result)));
         }
 
         @Override

@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public class ChippedRecipe implements Recipe<Container> {
-
     private final Serializer serializer;
     private final ResourceLocation id;
     private final String group;
@@ -43,11 +42,12 @@ public class ChippedRecipe implements Recipe<Container> {
     public Stream<ItemStack> getResults(Container container) {
         ItemStack current = container.getItem(0);
         if (!current.isEmpty()) {
-            for (Tag<Item> tag : tags) {
-                if (current.getItem().is(tag)) {
-                    return tags.stream().flatMap(taggerino -> taggerino.getValues().stream()).filter(item -> item != current.getItem()).map(ItemStack::new);
-                }
-            }
+            Item item = current.getItem();
+            return tags.stream()
+                    .filter(item::is)
+                    .flatMap(tag -> tag.getValues().stream())
+                    .filter(value -> value != item)
+                    .map(ItemStack::new);
         }
         return Stream.empty();
     }
@@ -79,15 +79,19 @@ public class ChippedRecipe implements Recipe<Container> {
 
     @Override
     public boolean matches(Container inventory, Level worldIn) {
-        Item item = inventory.getItem(0).getItem();
-        if (item != Items.AIR) {
+        ItemStack item = inventory.getItem(0);
+        if (!item.isEmpty()) {
             for (Tag<Item> tag : tags) {
-                if (item.is(tag)) {
+                if (item.getItem().is(tag)) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    public List<Tag<Item>> getTags() {
+        return tags;
     }
 
     @Override
