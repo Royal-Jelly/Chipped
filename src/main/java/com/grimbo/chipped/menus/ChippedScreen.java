@@ -26,7 +26,7 @@ public class ChippedScreen extends AbstractContainerScreen<ChippedMenu> {
 	public ChippedScreen(ChippedMenu chippedMenu, Inventory inventory, Component component) {
 		super(chippedMenu, inventory, component);
 		chippedMenu.registerUpdateListener(this::containerChanged);
-		this.titleLabelY = -1;
+		--this.titleLabelY;
 	}
 
 	public void render(PoseStack poseStack, int i, int j, float f) {
