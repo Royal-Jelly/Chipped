@@ -1,0 +1,13 @@
+{
+  "ctm": {
+    "ctm_version": 1,
+    "type": "ctm",
+    "layer": "CUTOUT",
+    "textures": [
+      "chipped:block/basalt_ctm_6"
+    ],
+    "extra": {
+      "light": 0
+    }
+  }
+}

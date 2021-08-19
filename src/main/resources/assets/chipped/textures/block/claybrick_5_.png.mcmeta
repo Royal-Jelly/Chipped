@@ -1,0 +1,13 @@
+{
+  "ctm": {
+    "ctm_version": 1,
+    "type": "random",
+    "layer": "CUTOUT",
+    "textures": [
+      "chipped:block/claybrick_5_ctm_random"
+    ],
+    "extra": {
+      "light": 0
+    }
+  }
+}

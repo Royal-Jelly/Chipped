@@ -1,0 +1,13 @@
+{
+  "ctm": {
+    "ctm_version": 1,
+    "type": "edges",
+    "layer": "SOLID",
+    "textures": [
+      "chipped:block/claybrick_3_ctm_random.png"
+    ],
+    "extra": {
+      "light": 0
+    }
+  }
+}
